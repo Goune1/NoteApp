@@ -19,7 +19,7 @@ app.use(cors());
 const loginCollection = require("./schemas/loginSchema");
 const notesCollection = require('./schemas/noteSchema');
 
-const DB_URL = "mongodb+srv://goune:goune1407@ac-nef3pac.mongodb.net/NotesApp?retryWrites=true&w=majority";
+const DB_URL = "mongodb://goune:goune1407@ac-nef3pac-shard-00-02.0x9jwgi.mongodb.net:27017,ac-nef3pac-shard-00-01.0x9jwgi.mongodb.net:27017,ac-nef3pac-shard-00-00.0x9jwgi.mongodb.net:27017/WineApp?authSource=admin&replicaSet=atlas-tibrt3-shard-0&ssl=true";
 
 async function connectToDatabase() {
     try {
