@@ -23,17 +23,14 @@ const DB_URL = "mongodb://goune:goune1407@ac-nef3pac-shard-00-02.0x9jwgi.mongodb
 
 async function connectToDatabase() {
     try {
-        await mongoose.connect(DB_URL, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-        });
-        console.log("Connecté à la base de données MongoDB");
+      await mongoose.connect(DB_URL);
+      console.log("Connecté à la base de données MongoDB");
     } catch (error) {
-        console.error(`Impossible de se connecter à la base de données MongoDB: ${error.message}`);
+      console.error(`Impossible de se connecter à la base de données MongoDB: ${error}`);
     }
 }
 
-connectToDatabase();
+connectToDatabase(
 
 
 app.get('/', (req, res) => {
