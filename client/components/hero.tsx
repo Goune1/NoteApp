@@ -69,7 +69,7 @@ export default function Hero() {
             <h1 className="mt-10 text-4xl font-bold tracking-tight text-white sm:text-6xl">Votre <span className='text-indigo-600'>journal personnel</span> est là !</h1>
           )}
           <p className="mt-6 text-lg leading-8 text-gray-300">
-            Votre nouveau Journal de bord favori, chaque jour racontez à l'app votre journée et comment vous vous sentez
+            Votre nouveau Journal de bord favori, chaque jour racontez à l&apos;app votre journée et comment vous vous sentez
           </p>
           <div className="mt-10 flex items-center gap-x-6">
             {isLoggedIn ? (
