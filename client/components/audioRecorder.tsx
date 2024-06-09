@@ -72,7 +72,7 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ selectedDate, onNoteAdded
     formData.append('file', audioBlob, 'recording.wav');
     
     try {
-      const response = await fetch('http://localhost:3001/api/sound-upload', {
+      const response = await fetch('https://api-notes.gounevps.com/api/sound-upload', {
         method: 'POST',
         body: formData
       });
@@ -101,7 +101,7 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ selectedDate, onNoteAdded
       try {
         const userEmail = Cookies.get('email');
         const formattedDate = formatDate(selectedDate);
-        const response = await fetch('http://localhost:3001/api/notes', {
+        const response = await fetch('https://api-notes.gounevps.com/api/notes', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
