@@ -9,7 +9,7 @@ const path = require('path');
 const fs = require('fs');
 const OpenAI = require ("openai");
 
-const openai = new OpenAI({ apiKey: '' });
+const openai = new OpenAI({ apiKey: process.env.OPENAI_SECRET });
 
 const app = express();
 app.use(bodyParser.json());
@@ -17,6 +17,7 @@ app.use(cors());
 
 
 const loginCollection = require("./schemas/loginSchema")
+const notesCollection = require('./schemas/noteSchema')
 
 const DB_URL = "mongodb://goune:goune1407@ac-nef3pac-shard-00-02.0x9jwgi.mongodb.net:27017,ac-nef3pac-shard-00-01.0x9jwgi.mongodb.net:27017,ac-nef3pac-shard-00-00.0x9jwgi.mongodb.net:27017/NotesApp?authSource=admin&replicaSet=atlas-tibrt3-shard-0&ssl=true";
 
@@ -141,6 +142,163 @@ const sendAudioToOpenAI = async (filePath) => {
   console.log(transcription); // Assurez-vous que la transcription est correcte
   return transcription; // Retourner la transcription
 };
+
+
+app.post('/api/notes', async (req, res) => {
+  console.log(req.body)
+  console.log(req.body.email)
+
+  const prompt = req.body.transcription
+
+  const tools_functions = [
+    {
+      'type': 'function',
+      'function': {
+        'name': 'analyzeUserDay',
+        'description': 'you have to analyze the day of the user, and if he feels good or not',
+        'parameters': {
+          'type': 'object',
+          'properties': {
+            "Mood": {
+              'type': 'number',
+              'description': 'extracts a number between 0 and 10 that represents the user\'s happiness level'
+            },
+            "Activities": {
+              'type': 'string',
+              'descriptions': 'extracts the activities that the user did during the day'
+            }
+          }
+        }
+      }
+    }
+  ]
+
+  
+  const completion = await openai.chat.completions.create({
+    messages: [{"role": 'user', 'content': prompt}],
+    tools: tools_functions,
+    tool_choice: 'auto',
+    model: 'gpt-3.5-turbo-16k',
+    max_tokens: 256,
+  })
+
+  // Assuming the response structure
+  const note = JSON.parse(completion.choices[0].message.tool_calls[0].function.arguments);
+  const mood = note.Mood;
+  const activities = note.Activities;
+
+  console.log('Mood:', mood);
+  console.log('Activities:', activities);
+
+  const email = req.body.email
+  const currentDate = new Date();
+
+  const date = req.body.date
+
+  
+  // Créer un nouvel utilisateur si l'utilisateur n'existe pas
+  const newUser = new notesCollection({
+    email,
+    date,
+    notes: [{
+      mood,
+      activities,
+      prompt
+    }]
+  });
+  await newUser.save();
+  
+  res.status(200).json({
+    message: 'successfully send to open ai',
+    note: note
+  })
+})
+
+
+app.post('/api/fetchNotes', async (req, res) => {
+  const { date, email } = req.body;
+
+  if (!date || !email) {
+      return res.status(400).json({ error: 'Date and email are required' });
+  }
+
+  try {
+      const notes = await notesCollection.find({
+          email,
+          date
+      });
+
+      if (notes.length === 0) {
+          return res.status(200).json({ message: 'No notes found for this date' });
+      }
+
+      res.status(200).json(notes[0]);
+  } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Failed to fetch notes' });
+  }
+});
+
+
+app.post('/api/deleteNotes', async(req, res) => {
+  const { email, date } = req.body;
+
+  if (!email || !date) {
+      return res.status(400).json({ message: 'Email and date are required' });
+  }
+
+  try {
+      const result = await notesCollection.findOneAndDelete({ email, date });
+
+      if (result) {
+          res.status(200).json({ message: 'Note deleted successfully' });
+      } else {
+          res.status(404).json({ message: 'Note not found' });
+      }
+  } catch (error) {
+      console.error('Error deleting note:', error);
+      res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+
+app.post('/api/send-message', async (req, res) => {
+  const message = req.body.message
+  const email = req.body.email
+
+  const completion = await openai.chat.completions.create({
+    messages: [
+      {"role": 'system', 'content': 'l\'utilisateur va t\'indiquer une date, tu devras me la renvoyer sans aucun autre texte (uniquement la date) sous la forme année-mois-jour par exemple 2024-06-14 = 14 juin 2024. si l\'utilisateur n\'a par défaut pas fourni d\année alors indique qu\'il s\'agit de 2024. si tu nous trouves pas de date dans le message alors renvoie "Il semble que vous n\'ayez pas inclus de date dans votre message, veuillez réessayer."'},
+      {"role": 'user', 'content': message}
+    ],
+    model: 'gpt-3.5-turbo-16k',
+    max_tokens: 256,
+  })
+
+  console.log(completion.choices[0].message.content)
+  const date = completion.choices[0].message.content
+
+  try {
+    const notes = await notesCollection.find({
+        email,
+        date
+    });
+
+    if (notes.length === 0) {
+        return res.status(200).json({ message: 'Il n\'existe pas de note pour cette date ou vous n\'avez pas bien indiqué la date.' });
+    }
+
+    console.log(notes)
+    res.status(200).json(notes[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch notes' });
+  }
+
+
+  //res.status(200).json({ message: 'Chat successfuly sent'})
+})
+
 
 
 
