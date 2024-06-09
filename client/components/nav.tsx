@@ -83,7 +83,7 @@ export default function Example() {
             </DropdownMenu>
             
           ) : (
-            <a href='/login' className="text-sm font-semibold leading-6 text-white cursor-pointer">
+            <a href='/login' className="text-sm font-semibold leading-6 text-white cursor-pointer mr-4">
               Se connecter<span aria-hidden="true">&rarr;</span>
             </a>
           )}
