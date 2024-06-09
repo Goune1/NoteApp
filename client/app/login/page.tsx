@@ -37,8 +37,9 @@ export default function Example() {
       const res = await axios.post('https://api-notes.gounevps.com/api/login', formData);
       const username = res.data.user.username;
       const email = res.data.user.email;
-      Cookies.set('username', username);
-      Cookies.set('email', email);
+      Cookies.set('username', username, { sameSite: 'None', secure: true });
+      Cookies.set('email', email, { sameSite: 'None', secure: true });
+
       router.push('/');
     } catch (error) {
       console.error('Erreur lors de l\'envoi du formulaire:', error);
