@@ -33,6 +33,11 @@ async function connectToDatabase() {
 connectToDatabase()
 
 
+app.get('/', (req, res) => {
+  res.send("Welcome to the api")
+})
+
+
 
 app.post('/api/signup', async (req, res) => {
     const formData = req.body;
