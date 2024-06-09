@@ -17,6 +17,7 @@ const config = {
       padding: "2rem",
       screens: {
         "2xl": "1400px",
+        "big": '1520px'
       },
     },
     extend: {
@@ -56,10 +57,12 @@ const config = {
         },
       },
       width: {
-        customCard:'50rem'
+        customCard:'50rem',
+        customCard2: '40rem',
+        customCard3: '30rem'
       },
       height: {
-        customCard:'350px'
+        customCard:'500px'
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -79,6 +82,11 @@ const config = {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+      },
+      screens: {
+        "big": '1520px',
+        "mid": '1350px',
+        'mid2': '1150px'
       },
     },
   },
