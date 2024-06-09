@@ -51,7 +51,7 @@ export default function Example() {
     e.preventDefault();
     try {
       console.log(formData)
-      const res = await axios.post('http://localhost:3001/api/signup', formData);
+      const res = await axios.post('https://api-notes.gounevps.com/api/signup', formData);
       const username = res.data.user.username;
       const email = res.data.user.email;
       // Création du cookie avec le champ "name" des données
