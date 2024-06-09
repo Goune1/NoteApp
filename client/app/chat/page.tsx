@@ -8,9 +8,15 @@ import { UserRound } from 'lucide-react';
 
 type MessageType = 'user' | 'api';
 
+interface ApiMessageContent {
+    mood?: string;
+    activities?: string;
+    message?: string;
+}
+
 interface Message {
     type: MessageType;
-    content: any; // ou tout type approprié pour le contenu du message
+    content: string | ApiMessageContent;
 }
 
 export default function Chat() {
@@ -45,9 +51,9 @@ export default function Chat() {
                     if (Array.isArray(result)) {
                         newResponseMessages = result.map(item => ({ type: 'api', content: item }));
                     } else if (result.notes) {
-                        newResponseMessages = [{ type: 'api', content: { mood: result.notes[0].mood, activities: result.notes[0].activities || [] } }];
+                        newResponseMessages = [{ type: 'api', content: { mood: result.notes[0].mood, activities: result.notes[0].activities || '' } }];
                     } else {
-                        newResponseMessages = [{ type: 'api', content: result.message }];
+                        newResponseMessages = [{ type: 'api', content: { message: result.message } }];
                     }
                     setMessages(prevMessages => [...prevMessages, ...newResponseMessages]);
                 }
@@ -55,6 +61,21 @@ export default function Chat() {
                 console.error('Erreur:', error);
             }
         }
+    };
+
+    const renderMessageContent = (content: string | ApiMessageContent): React.ReactNode => {
+        if (typeof content === 'string') {
+            return content;
+        }
+        if ('mood' in content && 'activities' in content) {
+            return (
+                <div>
+                    <p>Mood : {content.mood}</p>
+                    <p>Activités : {content.activities?.split(',').map(activity => activity.trim()).join(', ')}</p>
+                </div>
+            );
+        }
+        return content.message;
     };
 
     return (
@@ -72,14 +93,7 @@ export default function Chat() {
                                     <p className='text-xl'>{msg.type === 'user' ? 'Vous' : 'Assistant'}</p>
                                 </div>
                                 <div className='ml-1 mt-1'>
-                                    {typeof msg.content === 'object' ? (
-                                        <div>
-                                            <p>Mood : {msg.content.mood}</p>
-                                            <p>Activités : {msg.content.activities.split(',').map(activity => activity.trim()).join(', ')}</p>
-                                        </div>
-                                    ) : (
-                                        msg.content
-                                    )}
+                                    {renderMessageContent(msg.content)}
                                 </div>
                             </div>
                         ))}
