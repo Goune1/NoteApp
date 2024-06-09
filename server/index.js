@@ -16,21 +16,24 @@ app.use(bodyParser.json());
 app.use(cors());
 
 
-const loginCollection = require("./schemas/loginSchema")
-const notesCollection = require('./schemas/noteSchema')
+const loginCollection = require("./schemas/loginSchema");
+const notesCollection = require('./schemas/noteSchema');
 
-const DB_URL = "mongodb://goune:goune1407@ac-nef3pac-shard-00-02.0x9jwgi.mongodb.net:27017,ac-nef3pac-shard-00-01.0x9jwgi.mongodb.net:27017,ac-nef3pac-shard-00-00.0x9jwgi.mongodb.net:27017/NotesApp?authSource=admin&replicaSet=atlas-tibrt3-shard-0&ssl=true";
+const DB_URL = "mongodb+srv://goune:goune1407@ac-nef3pac.mongodb.net/NotesApp?retryWrites=true&w=majority";
 
 async function connectToDatabase() {
     try {
-      await mongoose.connect(DB_URL);
-      console.log("Connecté à la base de données MongoDB");
+        await mongoose.connect(DB_URL, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+        });
+        console.log("Connecté à la base de données MongoDB");
     } catch (error) {
-      console.error(`Impossible de se connecter à la base de données MongoDB: ${error}`);
+        console.error(`Impossible de se connecter à la base de données MongoDB: ${error.message}`);
     }
 }
 
-connectToDatabase()
+connectToDatabase();
 
 
 app.get('/', (req, res) => {
