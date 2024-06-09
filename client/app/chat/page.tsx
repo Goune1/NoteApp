@@ -33,7 +33,7 @@ export default function Chat() {
 
             try {
                 const email = Cookies.get('email');
-                const response = await fetch('http://localhost:3001/api/send-message', {
+                const response = await fetch('https://api-notes.gounevps.com/api/send-message', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
