@@ -12,7 +12,7 @@ const OpenAI = require ("openai");
 const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
-const openai = new OpenAI({ apiKey: 'sk-proj-EvHSVxPzsXtmZ7ZIwpDDT3BlbkFJBd6gdPiJMc5zuOUoftS5' });
+const openai = new OpenAI({ apiKey: process.env.OPENAI_SECRET });
 
 const app = express();
 app.use(bodyParser.json());
