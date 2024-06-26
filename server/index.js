@@ -5,19 +5,22 @@ const mongoose = require('mongoose')
 const bcrypt = require('bcryptjs')
 const bodyParser = require('body-parser');
 const multer = require('multer');
+require('dotenv').config();
 const path = require('path');
 const fs = require('fs');
 const OpenAI = require ("openai");
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_SECRET });
+const openai = new OpenAI({ apiKey: 'sk-proj-EvHSVxPzsXtmZ7ZIwpDDT3BlbkFJBd6gdPiJMc5zuOUoftS5' });
 
 const app = express();
 app.use(bodyParser.json());
 app.use(cors());
 
 
-const loginCollection = require("./schemas/loginSchema");
-const notesCollection = require('./schemas/noteSchema');
+const loginCollection = require("./schemas/loginSchema")
+const notesCollection = require('./schemas/noteSchema')
 
 const DB_URL = "mongodb://goune:goune1407@ac-nef3pac-shard-00-02.0x9jwgi.mongodb.net:27017,ac-nef3pac-shard-00-01.0x9jwgi.mongodb.net:27017,ac-nef3pac-shard-00-00.0x9jwgi.mongodb.net:27017/NotesApp?authSource=admin&replicaSet=atlas-tibrt3-shard-0&ssl=true";
 
@@ -31,11 +34,6 @@ async function connectToDatabase() {
 }
 
 connectToDatabase()
-
-
-app.get('/', (req, res) => {
-  res.send("Welcome to the api")
-})
 
 
 
@@ -93,7 +91,7 @@ app.post("/api/login", async (req, res) => {
   res.status(200).json({ message: "Correctly Logged IN", user: dataSent });
 })
 
-const storage = multer.diskStorage({
+/*const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const uploadPath = 'uploads/';
     // Create uploads directory if it doesn't exist
@@ -111,7 +109,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // Endpoint to handle audio file uploads
-app.post('/api/sound-upload', upload.single('file'), async (req, res) => {
+app.post('/api/soundupload', upload.single('file'), async (req, res) => {
   try {
     // req.file contains information about the uploaded file
     const file = req.file;
@@ -146,7 +144,38 @@ const sendAudioToOpenAI = async (filePath) => {
 
   console.log(transcription); // Assurez-vous que la transcription est correcte
   return transcription; // Retourner la transcription
-};
+};*/
+
+app.post('/api/sound-upload', async (req, res) => {
+  const { file } = req.body;
+
+  if (!file) {
+    return res.status(400).json({ error: 'No file uploaded' });
+  }
+
+  // Extraction du buffer depuis la chaîne Base64
+  const buffer = Buffer.from(file.split(',')[1], 'base64');
+
+  // Création d'un fichier temporaire pour l'envoi à l'API OpenAI
+  const tempFilePath = './temp_audio.wav';
+  fs.writeFileSync(tempFilePath, buffer);
+
+  try {
+    const response = await openai.audio.transcriptions.create({
+      file: fs.createReadStream(tempFilePath),
+      model: 'whisper-1',
+      response_format: 'text',
+    });
+
+    console.log(response)
+    res.status(200).json({ response });
+  } catch (error) {
+    console.error('Error uploading audio to OpenAI:', error);
+    res.status(500).json({ error: 'Failed to upload audio to OpenAI' });
+  } finally {
+    fs.unlinkSync(tempFilePath); // Suppression du fichier temporaire
+  }
+});
 
 
 app.post('/api/notes', async (req, res) => {
