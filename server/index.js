@@ -47,7 +47,7 @@ app.post('/api/signup', async (req, res) => {
         password: formData.password
     }
   
-    const user = await loginCollection.findOne({email: formData.email})
+    const user = await loginCollection.findOne({email: formData.email});
   
     if (user) {
       return res.status(400).json({ message: "Cet utilisateur existe déjà !" });
