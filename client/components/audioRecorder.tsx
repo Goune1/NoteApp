@@ -68,24 +68,31 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ selectedDate, onNoteAdded
   };
 
   const sendAudioToApi = async (audioBlob: Blob) => {
-    const formData = new FormData();
-    formData.append('file', audioBlob, 'recording.wav');
-    
-    try {
-      const response = await fetch('https://api-notes.gounevps.com/api/sound-upload', {
-        method: 'POST',
-        body: formData
-      });
+    const reader = new FileReader();
+    reader.readAsDataURL(audioBlob);
+    reader.onloadend = async () => {
+      const base64String = reader.result as string;
 
-      if (response.ok) {
-        const result = await response.json();
-        setTranscription(result.transcription);
-      } else {
-        console.error('Failed to upload audio file');
+      try {
+        const response = await fetch('http://localhost:3001/api/sound-upload', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ file: base64String }),
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          console.log(result)
+          setTranscription(result.response);
+        } else {
+          console.error('Failed to upload audio file');
+        }
+      } catch (err) {
+        console.error('Error occurred while uploading audio file', err);
       }
-    } catch (err) {
-      console.error('Error occurred while uploading audio file', err);
-    }
+    };
   };
 
   const formatDate = (date: Date | undefined): string | undefined => {
@@ -101,7 +108,7 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ selectedDate, onNoteAdded
       try {
         const userEmail = Cookies.get('email');
         const formattedDate = formatDate(selectedDate);
-        const response = await fetch('https://api-notes.gounevps.com/api/notes', {
+        const response = await fetch('http://localhost:3001/api/notes', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
